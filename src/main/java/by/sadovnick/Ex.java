@@ -1,18 +1,27 @@
 package by.sadovnick;
 
-import java.util.stream.Stream;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Ex {
-    public static void main(String[] args) {
-        boolean b = Stream.of("d2", "a2", "b1", "b3", "c")
-                .map(s -> {
-                    System.out.println("map: " + s);
-                    return s.toUpperCase();
-                })
-                .anyMatch(s -> {
-                    System.out.println("anyMatch: " + s);
-                    return s.startsWith("A");
-                });
-        System.out.println(b);
+    private static int counter1 = 0;
+    private static int counter2 = 0;
+
+    public static void main(String[] args) throws InterruptedException {
+        int taskCounnt = 100_000;
+        CountDownLatch latch = new CountDownLatch(taskCounnt);
+        ExecutorService executorService = Executors.newFixedThreadPool(100);
+        for (int i = 0; i < taskCounnt; i++) {
+            executorService.submit(() -> {
+                counter1++;
+                counter2++;
+                latch.countDown();
+            });
+        }
+        latch.await();
+        System.out.println(counter1);
+        System.out.println(counter2);
+        System.exit(0);
     }
 }
